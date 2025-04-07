@@ -4,7 +4,7 @@ import axios, { AxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-import { API } from '@/lib/api';
+import { API_URL } from '@/config/api.config';
 
 export default function ConfirmPage() {
 	const searchParams = useSearchParams();
@@ -17,7 +17,7 @@ export default function ConfirmPage() {
 		const confirmEmail = async () => {
 			try {
 				const response = await axios.get(
-					`${API.URL}/user/confirm?token=${token}`
+					`${API_URL}/user/confirm?token=${token}`
 				);
 				setMessage(response.data.message);
 			} catch (error) {

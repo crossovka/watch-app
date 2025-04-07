@@ -1,5 +1,13 @@
 /* eslint-disable indent */
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm'
+import {
+	Entity,
+	PrimaryGeneratedColumn,
+	Column,
+	CreateDateColumn,
+	UpdateDateColumn,
+	ManyToOne
+} from 'typeorm'
+import { Category } from 'src/categories/entities/category.entity'
 
 @Entity('movies')
 export class Movie {
@@ -30,8 +38,8 @@ export class Movie {
 	@Column({ default: 0 })
 	views: number
 
-	@Column('simple-array')
-	categories: string[]
+	@ManyToOne(() => Category, (category) => category.movies)
+	category: Category
 
 	@Column()
 	thumbnail: string

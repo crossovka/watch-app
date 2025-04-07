@@ -1,5 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
+import { Query } from '@nestjs/common'
+
 import { MoviesService } from './movies.service'
+
 import { CreateMovieDto } from './dto/create-movie.dto'
 import { UpdateMovieDto } from './dto/update-movie.dto'
 
@@ -10,6 +13,11 @@ export class MoviesController {
 	@Post()
 	create(@Body() dto: CreateMovieDto) {
 		return this.moviesService.create(dto)
+	}
+
+	@Get()
+	findAllShort(@Query('page') page: number = 1, @Query('perPage') perPage: number = 10) {
+		return this.moviesService.findAllShort(Number(page), Number(perPage))
 	}
 
 	@Get(':slug')

@@ -12,6 +12,7 @@ import { getVideoDuration } from 'src/utils/get-video-duration'
 import { CreateMovieDto } from './dto/create-movie.dto'
 import { UpdateMovieDto } from './dto/update-movie.dto'
 import { MovieResponseDto } from './dto/movie-response.dto'
+import { MovieShortDto } from './dto/movie-short.dto'
 
 @Injectable()
 export class MoviesService {
@@ -54,6 +55,29 @@ export class MoviesService {
 
 		const saved = await this.movieRepo.save(movie)
 		return new MovieResponseDto(saved)
+	}
+
+	async findAllShort(
+		page = 1,
+		perPage = 10
+	): Promise<{
+		items: MovieShortDto[]
+		total: number
+		page: number
+		perPage: number
+	}> {
+		const [movies, total] = await this.movieRepo.findAndCount({
+			skip: (page - 1) * perPage,
+			take: perPage,
+			order: { createdAt: 'DESC' } // сортируем от новых к старым
+		})
+
+		return {
+			items: movies.map((movie) => new MovieShortDto(movie)),
+			total,
+			page,
+			perPage
+		}
 	}
 
 	async findBySlug(slug: string): Promise<MovieResponseDto> {

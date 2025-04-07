@@ -3,44 +3,93 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
 import { Movie } from './entities/movie.entity'
+import { Category } from 'src/categories/entities/category.entity'
 
 import { throwIfDuplicate, throwIfNotFound } from 'src/utils/http-exceptions'
 import { generateSlug } from 'src/utils/slugify'
+import { getVideoDuration } from 'src/utils/get-video-duration'
 
 import { CreateMovieDto } from './dto/create-movie.dto'
 import { UpdateMovieDto } from './dto/update-movie.dto'
 import { MovieResponseDto } from './dto/movie-response.dto'
 
-
 @Injectable()
 export class MoviesService {
 	constructor(
 		@InjectRepository(Movie)
-		private readonly movieRepo: Repository<Movie>
+		private readonly movieRepo: Repository<Movie>,
+		@InjectRepository(Category)
+		private readonly categoryRepo: Repository<Category>
 	) {}
 
 	async create(dto: CreateMovieDto): Promise<MovieResponseDto> {
 		const slug = generateSlug(dto.title)
+
 		const existing = await this.movieRepo.findOne({ where: { slug } })
 		throwIfDuplicate(existing, 'Movie already exists')
 
-		const movie = this.movieRepo.create({ ...dto, slug })
+		const duration = await getVideoDuration(dto.videoUrl)
+
+		// Загружаем категории по переданным слагам
+		const categories = await this.categoryRepo.find({
+			where: dto.categories.map((slug) => ({ slug }))
+		})
+
+		if (categories.length !== dto.categories.length) {
+			const missing = dto.categories.filter((slug) => !categories.some((cat) => cat.slug === slug))
+			throw new Error(`Категории не найдены: ${missing.join(', ')}`)
+		}
+
+		const movie = this.movieRepo.create({
+			slug,
+			duration,
+			title: dto.title,
+			description: dto.description,
+			year: dto.year,
+			rating: dto.rating,
+			thumbnail: dto.thumbnail,
+			videoUrl: dto.videoUrl,
+			categories
+		})
+
 		const saved = await this.movieRepo.save(movie)
 		return new MovieResponseDto(saved)
 	}
 
 	async findBySlug(slug: string): Promise<MovieResponseDto> {
-		const movie = await this.movieRepo.findOne({ where: { slug } })
+		const movie = await this.movieRepo.findOne({
+			where: { slug },
+			relations: ['categories'] // вот это ключевое
+		})
 		throwIfNotFound(movie, 'Movie not found')
 		return new MovieResponseDto(movie)
 	}
 
 	async update(slug: string, dto: UpdateMovieDto): Promise<MovieResponseDto> {
-		const movie = await this.movieRepo.findOne({ where: { slug } })
+		const movie = await this.movieRepo.findOne({
+			where: { slug },
+			relations: ['categories']
+		})
 		throwIfNotFound(movie, 'Movie not found')
 
 		if (dto.title && dto.title !== movie.title) {
 			movie.slug = generateSlug(dto.title)
+		}
+
+		// если переданы категории — перезаписываем
+		if (dto.categories && dto.categories.length > 0) {
+			const categories = await this.categoryRepo.find({
+				where: dto.categories.map((slug) => ({ slug }))
+			})
+
+			if (categories.length !== dto.categories.length) {
+				const missing = dto.categories.filter(
+					(slug) => !categories.some((cat) => cat.slug === slug)
+				)
+				throw new Error(`Категории не найдены: ${missing.join(', ')}`)
+			}
+
+			movie.categories = categories
 		}
 
 		Object.assign(movie, dto)

@@ -3,9 +3,9 @@ import {
 	Entity,
 	PrimaryGeneratedColumn,
 	Column,
-	OneToMany,
 	CreateDateColumn,
-	UpdateDateColumn
+	UpdateDateColumn,
+	ManyToMany
 } from 'typeorm'
 
 import { Movie } from 'src/movies/entities/movie.entity'
@@ -24,8 +24,11 @@ export class Category {
 	@Column({ nullable: true })
 	description?: string
 
-	@OneToMany(() => Movie, (movie) => movie.category)
+	@ManyToMany(() => Movie, (movie) => movie.categories)
 	movies: Movie[]
+
+	@Column()
+	thumbnail: string
 
 	@CreateDateColumn()
 	createdAt: Date

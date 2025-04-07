@@ -1,5 +1,5 @@
 /* eslint-disable indent */
-import { IsOptional, IsString } from 'class-validator'
+import { IsOptional, IsString, IsUrl } from 'class-validator'
 
 export class CreateCategoryDto {
 	@IsString()
@@ -8,4 +8,7 @@ export class CreateCategoryDto {
 	@IsOptional()
 	@IsString()
 	description?: string
+
+	@IsUrl()
+	thumbnail: string
 }

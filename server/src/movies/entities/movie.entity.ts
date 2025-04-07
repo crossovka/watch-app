@@ -5,7 +5,8 @@ import {
 	Column,
 	CreateDateColumn,
 	UpdateDateColumn,
-	ManyToOne
+	ManyToMany,
+	JoinTable
 } from 'typeorm'
 import { Category } from 'src/categories/entities/category.entity'
 
@@ -38,14 +39,12 @@ export class Movie {
 	@Column({ default: 0 })
 	views: number
 
-	@ManyToOne(() => Category, (category) => category.movies)
-	category: Category
+	@ManyToMany(() => Category, (category) => category.movies, { cascade: true })
+	@JoinTable()
+	categories: Category[]
 
 	@Column()
 	thumbnail: string
-
-	@Column()
-	poster: string
 
 	@Column()
 	videoUrl: string

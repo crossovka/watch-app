@@ -17,6 +17,11 @@ export class CategoriesController {
 		return this.categoryService.findAll()
 	}
 
+	@Get()
+	findAllShort() {
+		return this.categoryService.findAll()
+	}
+
 	@Get(':slug')
 	findOne(@Param('slug') slug: string) {
 		return this.categoryService.findOne(slug)

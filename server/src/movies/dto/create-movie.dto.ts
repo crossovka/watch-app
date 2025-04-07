@@ -12,9 +12,6 @@ export class CreateMovieDto {
 	year: number
 
 	@IsNumber()
-	duration: number
-
-	@IsNumber()
 	rating: number
 
 	@IsArray()
@@ -22,9 +19,6 @@ export class CreateMovieDto {
 
 	@IsUrl()
 	thumbnail: string
-
-	@IsUrl()
-	poster: string
 
 	@IsUrl()
 	videoUrl: string

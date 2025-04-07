@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
 import { MoviesService } from './movies.service'
 import { CreateMovieDto } from './dto/create-movie.dto'
 import { UpdateMovieDto } from './dto/update-movie.dto'
@@ -17,7 +17,7 @@ export class MoviesController {
 		return this.moviesService.findBySlug(slug)
 	}
 
-	@Put(':slug')
+	@Patch(':slug')
 	update(@Param('slug') slug: string, @Body() dto: UpdateMovieDto) {
 		return this.moviesService.update(slug, dto)
 	}

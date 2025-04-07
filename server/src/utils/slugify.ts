@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { randomUUID } from 'crypto'
 
 const cyrillicToLatinMap: Record<string, string> = {
@@ -27,7 +28,9 @@ export function generateSlug(title: string): string {
 		.replace(/-+/g, '-')          // несколько дефисов → один
 		.replace(/^-+|-+$/g, '')      // убираем дефисы в начале/конце
 
-	const uid = randomUUID().split('-')[0] // короткий уникальный id
+	// const uid = randomUUID().split('-')[0] // короткий уникальный id
 
-	return `${baseSlug}-${uid}`
+	// return `${baseSlug}-${uid}`
+
+	return baseSlug	
 }

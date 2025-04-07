@@ -10,6 +10,7 @@ import { generateSlug } from 'src/utils/slugify'
 import { CreateCategoryDto } from './dto/create-category.dto'
 import { UpdateCategoryDto } from './dto/update-category.dto'
 import { CategoryResponseDto } from './dto/category-response.dto'
+import { CategoryShortDto } from './dto/category-short.dto'
 
 @Injectable()
 export class CategoriesService {
@@ -29,9 +30,9 @@ export class CategoriesService {
 		return new CategoryResponseDto(category)
 	}
 
-	async findAll(): Promise<CategoryResponseDto[]> {
+	async findAll(): Promise<CategoryShortDto[]> {
 		const categories = await this.categoryRepo.find()
-		return categories.map((cat) => new CategoryResponseDto(cat))
+		return categories.map((cat) => new CategoryShortDto(cat))
 	}
 
 	async findOne(slug: string): Promise<CategoryResponseDto> {

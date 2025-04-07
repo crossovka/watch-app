@@ -8,6 +8,8 @@ import { UserModule } from './user/user.module'
 
 import { User } from './user/entities/user.entity'
 import { EmailService } from './email/email.service';
+import { MoviesModule } from './movies/movies.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
 	imports: [
@@ -23,7 +25,9 @@ import { EmailService } from './email/email.service';
 			synchronize: true // В проде лучше использовать миграции
 		}),
 		AuthModule,
-		UserModule
+		UserModule,
+		MoviesModule,
+		CategoriesModule
 	],
 	controllers: [],
 	providers: [EmailService]

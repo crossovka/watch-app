@@ -5,6 +5,7 @@ import { MoviesService } from './movies.service'
 
 import { CreateMovieDto } from './dto/create-movie.dto'
 import { UpdateMovieDto } from './dto/update-movie.dto'
+import { SearchMovieDto } from './dto/search-movie.dto'
 
 @Controller('movies')
 export class MoviesController {
@@ -18,6 +19,19 @@ export class MoviesController {
 	@Get()
 	findAllShort(@Query('page') page: number = 1, @Query('perPage') perPage: number = 10) {
 		return this.moviesService.findAllShort(Number(page), Number(perPage))
+	}
+
+	@Get('search')
+	search(@Query() query: SearchMovieDto) {
+		return this.moviesService.search({
+			title: query.title,
+			year: query.year ? Number(query.year) : undefined,
+			minRating: query.minRating ? Number(query.minRating) : undefined,
+			maxRating: query.maxRating ? Number(query.maxRating) : undefined,
+			categories: query.categories ? query.categories.split(',') : undefined,
+			page: query.page ? Number(query.page) : 1,
+			perPage: query.perPage ? Number(query.perPage) : 10
+		})
 	}
 
 	@Get(':slug')

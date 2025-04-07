@@ -80,6 +80,59 @@ export class MoviesService {
 		}
 	}
 
+	async search(query: {
+		title?: string
+		year?: number
+		minRating?: number
+		maxRating?: number
+		categories?: string[]
+		page?: number
+		perPage?: number
+	}): Promise<{
+		items: MovieShortDto[]
+		total: number
+		page: number
+		perPage: number
+	}> {
+		const { title, year, minRating, maxRating, categories, page = 1, perPage = 10 } = query
+
+		const qb = this.movieRepo
+			.createQueryBuilder('movie')
+			.leftJoinAndSelect('movie.categories', 'category')
+			.skip((page - 1) * perPage)
+			.take(perPage)
+			.orderBy('movie.createdAt', 'DESC')
+
+		if (title) {
+			qb.andWhere('LOWER(movie.title) LIKE LOWER(:title)', { title: `%${title}%` })
+		}
+
+		if (year) {
+			qb.andWhere('movie.year = :year', { year })
+		}
+
+		if (minRating) {
+			qb.andWhere('movie.rating >= :minRating', { minRating })
+		}
+
+		if (maxRating) {
+			qb.andWhere('movie.rating <= :maxRating', { maxRating })
+		}
+
+		if (categories && categories.length > 0) {
+			qb.andWhere('category.slug IN (:...categories)', { categories })
+		}
+
+		const [movies, total] = await qb.getManyAndCount()
+
+		return {
+			items: movies.map((movie) => new MovieShortDto(movie)),
+			total,
+			page,
+			perPage
+		}
+	}
+
 	async findBySlug(slug: string): Promise<MovieResponseDto> {
 		const movie = await this.movieRepo.findOne({
 			where: { slug },

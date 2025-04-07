@@ -1,9 +1,13 @@
+import { addHours, isBefore } from 'date-fns'
+
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
 import { Movie } from './entities/movie.entity'
 import { Category } from 'src/categories/entities/category.entity'
+import { MovieView } from './entities/movie-view.entity'
+import { User } from 'src/user/entities/user.entity'
 
 import { throwIfDuplicate, throwIfNotFound } from 'src/utils/http-exceptions'
 import { generateSlug } from 'src/utils/slugify'
@@ -19,8 +23,15 @@ export class MoviesService {
 	constructor(
 		@InjectRepository(Movie)
 		private readonly movieRepo: Repository<Movie>,
+
 		@InjectRepository(Category)
-		private readonly categoryRepo: Repository<Category>
+		private readonly categoryRepo: Repository<Category>,
+
+		@InjectRepository(User)
+		private readonly userRepo: Repository<User>,
+
+		@InjectRepository(MovieView)
+		private readonly viewRepo: Repository<MovieView>
 	) {}
 
 	async create(dto: CreateMovieDto): Promise<MovieResponseDto> {
@@ -140,6 +151,69 @@ export class MoviesService {
 		})
 		throwIfNotFound(movie, 'Movie not found')
 		return new MovieResponseDto(movie)
+	}
+
+	async addView(slug: string, userId: number): Promise<{ views: number }> {
+		console.log('🔍 addView called with slug:', slug, 'userId:', userId)
+
+		const movie = await this.movieRepo.findOne({ where: { slug } })
+		throwIfNotFound(movie, 'Movie not found')
+
+		const user = await this.userRepo.findOneBy({ id: userId })
+		throwIfNotFound(user, 'User not found')
+
+		// Получаем последний просмотр этого фильма этим пользователем
+		const existingView = await this.viewRepo.findOne({
+			where: {
+				movie: { id: movie.id },
+				user: { id: user.id }
+			},
+			order: { createdAt: 'DESC' },
+			relations: ['movie', 'user']
+		})
+
+		console.log('🔍 existingView:', existingView)
+
+		const now = new Date()
+
+		if (!existingView) {
+			// Первый просмотр — создаём запись и увеличиваем views
+			const newView = this.viewRepo.create({ movie, user })
+			await this.viewRepo.save(newView)
+
+			await this.movieRepo
+				.createQueryBuilder()
+				.update(Movie)
+				.set({ views: () => 'views + 1' })
+				.where('id = :id', { id: movie.id })
+				.execute()
+
+			console.log('✅ First view — counter incremented')
+		} else {
+			const nextAllowedViewTime = addHours(existingView.createdAt, 6)
+			// const nextAllowedViewTime = addSeconds(existingView.createdAt, 2)
+
+			if (isBefore(nextAllowedViewTime, now)) {
+				// Прошло больше 2 секунд — разрешаем новый просмотр
+				const newView = this.viewRepo.create({ movie, user })
+				await this.viewRepo.save(newView)
+
+				await this.movieRepo
+					.createQueryBuilder()
+					.update(Movie)
+					.set({ views: () => 'views + 1' })
+					.where('id = :id', { id: movie.id })
+					.execute()
+
+				console.log('✅ Repeat view allowed after 2s — counter incremented')
+			} else {
+				const waitMs = nextAllowedViewTime.getTime() - now.getTime()
+				console.log(`⏳ Wait ${waitMs}ms before next view counts`)
+			}
+		}
+
+		const updatedMovie = await this.movieRepo.findOneBy({ id: movie.id })
+		return { views: updatedMovie?.views || 0 }
 	}
 
 	async update(slug: string, dto: UpdateMovieDto): Promise<MovieResponseDto> {

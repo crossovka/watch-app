@@ -1,11 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common'
 import { Query } from '@nestjs/common'
 
 import { MoviesService } from './movies.service'
 
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard'
+
 import { CreateMovieDto } from './dto/create-movie.dto'
 import { UpdateMovieDto } from './dto/update-movie.dto'
 import { SearchMovieDto } from './dto/search-movie.dto'
+import { RequestWithUser } from 'src/@types/request-with-user'
 
 @Controller('movies')
 export class MoviesController {
@@ -37,6 +40,15 @@ export class MoviesController {
 	@Get(':slug')
 	find(@Param('slug') slug: string) {
 		return this.moviesService.findBySlug(slug)
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Post(':slug/view')
+	async addView(@Param('slug') slug: string, @Req() req: RequestWithUser) {
+		const userId = req.user.id
+		console.log('👉 userId:', userId)
+		const { views } = await this.moviesService.addView(slug, userId)
+		return { views }
 	}
 
 	@Patch(':slug')

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common'
 import { UserService } from '../user/user.service' // Убедись, что путь правильный
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
@@ -21,12 +21,16 @@ export class AuthService {
 
 	async login(user: { email: string; password: string }) {
 		const validatedUser = await this.validateUser(user.email, user.password)
+
+		if (!validatedUser.isEmailConfirmed) {
+			throw new HttpException('Email не подтверждён', HttpStatus.UNAUTHORIZED)
+		}
+
 		const payload = { email: validatedUser.email }
 
-		// Возвращаем все данные пользователя, включая токен
 		return {
 			access_token: this.jwtService.sign(payload),
-			...validatedUser // Все поля пользователя
+			...validatedUser
 		}
 	}
 }

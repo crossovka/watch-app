@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common'
 import { UserService } from './user.service'
 import { RegisterUserDto } from './dto/RegisterUserDto.dto'
 
@@ -10,5 +10,10 @@ export class UserController {
 	@HttpCode(HttpStatus.CREATED)
 	async register(@Body() userDto: RegisterUserDto) {
 		return this.userService.registerUser(userDto)
+	}
+
+	@Get('confirm')
+	async confirmEmail(@Query('token') token: string) {
+		return this.userService.confirmEmail(token)
 	}
 }

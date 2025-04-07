@@ -1,8 +1,5 @@
 /* eslint-disable indent */
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTable } from 'typeorm'
-
-import { Category } from 'src/categories/entities/category.entity'
-import { Task } from 'src/tasks/entities/task.entity'
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
 
 @Entity()
 export class User {
@@ -15,13 +12,12 @@ export class User {
 	@Column({ unique: true }) // Email теперь ключ для входа
 	email: string
 
+	@Column({ default: false })
+	isEmailConfirmed: boolean
+
+	@Column({ nullable: true })
+	emailConfirmationToken: string
+
 	@Column()
 	password: string
-
-	@ManyToMany(() => Task, (task) => task.users)
-	@JoinTable()
-	tasks: Task[]
-
-	@OneToMany(() => Category, (category) => category.user)
-	categories: Category[]
 }

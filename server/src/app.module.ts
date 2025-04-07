@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module'
 import { UserModule } from './user/user.module'
 
 import { User } from './user/entities/user.entity'
+import { EmailService } from './email/email.service';
 
 @Module({
 	imports: [
@@ -25,6 +26,6 @@ import { User } from './user/entities/user.entity'
 		UserModule
 	],
 	controllers: [],
-	providers: []
+	providers: [EmailService]
 })
 export class AppModule {}

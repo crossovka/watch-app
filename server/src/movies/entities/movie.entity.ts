@@ -6,9 +6,13 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	ManyToMany,
-	JoinTable
+	JoinTable,
+	OneToMany
 } from 'typeorm'
+
 import { Category } from 'src/categories/entities/category.entity'
+import { WatchHistory } from './watch-history.entity'
+import { Favorite } from 'src/user/entities/favorite.entity'
 
 @Entity('movies')
 export class Movie {
@@ -42,6 +46,12 @@ export class Movie {
 	@ManyToMany(() => Category, (category) => category.movies, { cascade: true })
 	@JoinTable()
 	categories: Category[]
+
+	@OneToMany(() => WatchHistory, (history) => history.movie)
+	watchHistory: WatchHistory[]
+
+	@OneToMany(() => Favorite, (favorite) => favorite.movie)
+	favorites: Favorite[]
 
 	@Column()
 	thumbnail: string

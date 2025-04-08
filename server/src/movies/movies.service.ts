@@ -8,6 +8,7 @@ import { Movie } from './entities/movie.entity'
 import { Category } from 'src/categories/entities/category.entity'
 import { MovieView } from './entities/movie-view.entity'
 import { User } from 'src/user/entities/user.entity'
+import { WatchHistory } from './entities/watch-history.entity'
 
 import { throwIfDuplicate, throwIfNotFound } from 'src/utils/http-exceptions'
 import { generateSlug } from 'src/utils/slugify'
@@ -31,7 +32,10 @@ export class MoviesService {
 		private readonly userRepo: Repository<User>,
 
 		@InjectRepository(MovieView)
-		private readonly viewRepo: Repository<MovieView>
+		private readonly viewRepo: Repository<MovieView>,
+
+		@InjectRepository(WatchHistory)
+		private readonly watchHistoryRepo: Repository<WatchHistory>
 	) {}
 
 	async create(dto: CreateMovieDto): Promise<MovieResponseDto> {
@@ -162,8 +166,8 @@ export class MoviesService {
 		const user = await this.userRepo.findOneBy({ id: userId })
 		throwIfNotFound(user, 'User not found')
 
-		// Получаем последний просмотр этого фильма этим пользователем
-		const existingView = await this.viewRepo.findOne({
+		// Получаем последний просмотр из MovieView
+		const lastView = await this.viewRepo.findOne({
 			where: {
 				movie: { id: movie.id },
 				user: { id: user.id }
@@ -172,48 +176,70 @@ export class MoviesService {
 			relations: ['movie', 'user']
 		})
 
-		console.log('🔍 existingView:', existingView)
+		console.log('🔍 Last view:', lastView)
 
 		const now = new Date()
+		let shouldCountView = false
 
-		if (!existingView) {
-			// Первый просмотр — создаём запись и увеличиваем views
+		// Создаём запись в истории просмотров (WatchHistory) всегда
+		const watchRecord = this.watchHistoryRepo.create({
+			user,
+			movie,
+			watchedAt: now
+		})
+		await this.watchHistoryRepo.save(watchRecord)
+
+		// Проверяем временной интервал для учёта просмотра
+		if (!lastView) {
+			// Первый просмотр
 			const newView = this.viewRepo.create({ movie, user })
 			await this.viewRepo.save(newView)
+			shouldCountView = true
+		} else {
+			const nextAllowedViewTime = addHours(lastView.createdAt, 6)
 
+			if (isBefore(nextAllowedViewTime, now)) {
+				const newView = this.viewRepo.create({ movie, user })
+				await this.viewRepo.save(newView)
+				shouldCountView = true
+			} else {
+				const waitMs = nextAllowedViewTime.getTime() - now.getTime()
+				console.log(`⏳ Next view allowed in ${waitMs}ms`)
+			}
+		}
+
+		// Обновляем счётчик просмотров
+		if (shouldCountView) {
 			await this.movieRepo
 				.createQueryBuilder()
 				.update(Movie)
 				.set({ views: () => 'views + 1' })
 				.where('id = :id', { id: movie.id })
 				.execute()
-
-			console.log('✅ First view — counter incremented')
-		} else {
-			const nextAllowedViewTime = addHours(existingView.createdAt, 6)
-			// const nextAllowedViewTime = addSeconds(existingView.createdAt, 2)
-
-			if (isBefore(nextAllowedViewTime, now)) {
-				// Прошло больше 2 секунд — разрешаем новый просмотр
-				const newView = this.viewRepo.create({ movie, user })
-				await this.viewRepo.save(newView)
-
-				await this.movieRepo
-					.createQueryBuilder()
-					.update(Movie)
-					.set({ views: () => 'views + 1' })
-					.where('id = :id', { id: movie.id })
-					.execute()
-
-				console.log('✅ Repeat view allowed after 2s — counter incremented')
-			} else {
-				const waitMs = nextAllowedViewTime.getTime() - now.getTime()
-				console.log(`⏳ Wait ${waitMs}ms before next view counts`)
-			}
 		}
 
 		const updatedMovie = await this.movieRepo.findOneBy({ id: movie.id })
 		return { views: updatedMovie?.views || 0 }
+	}
+	async getWatchHistory(userId: number, page: number = 1, perPage: number = 10) {
+		const [history, total] = await this.watchHistoryRepo.findAndCount({
+			where: { user: { id: userId } },
+			relations: ['movie'],
+			order: { watchedAt: 'DESC' },
+			skip: (page - 1) * perPage,
+			take: perPage
+		})
+
+		return {
+			data: history.map((record) => ({
+				...record.movie,
+				watchedAt: record.watchedAt // Добавляем дату просмотра
+			})),
+			total,
+			page,
+			perPage,
+			totalPages: Math.ceil(total / perPage)
+		}
 	}
 
 	async update(slug: string, dto: UpdateMovieDto): Promise<MovieResponseDto> {

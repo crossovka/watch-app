@@ -12,6 +12,8 @@ import { User } from './user/entities/user.entity'
 import { Movie } from './movies/entities/movie.entity'
 import { Category } from './categories/entities/category.entity'
 import { MovieView } from './movies/entities/movie-view.entity'
+import { WatchHistory } from './movies/entities/watch-history.entity'
+import { Favorite } from './user/entities/favorite.entity'
 
 import { EmailService } from './email/email.service'
 
@@ -25,7 +27,7 @@ import { EmailService } from './email/email.service'
 			username: process.env.DATABASE_USER,
 			password: process.env.DATABASE_PASSWORD,
 			database: process.env.DATABASE_NAME,
-			entities: [User, Movie, Category, MovieView],
+			entities: [User, Movie, Category, MovieView, WatchHistory, Favorite],
 			synchronize: true // В проде лучше использовать миграции
 		}),
 		AuthModule,

@@ -51,6 +51,16 @@ export class MoviesController {
 		return { views }
 	}
 
+	@UseGuards(JwtAuthGuard)
+	@Get('history/watched')
+	async getWatchHistory(
+		@Req() req: RequestWithUser,
+		@Query('page') page: number = 1,
+		@Query('perPage') perPage: number = 10
+	) {
+		return this.moviesService.getWatchHistory(req.user.id, Number(page), Number(perPage))
+	}
+
 	@Patch(':slug')
 	update(@Param('slug') slug: string, @Body() dto: UpdateMovieDto) {
 		return this.moviesService.update(slug, dto)

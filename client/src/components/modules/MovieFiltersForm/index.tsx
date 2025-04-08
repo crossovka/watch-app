@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { MovieFilters } from '@/@types/movieFilters.type';
-import { MovieMinimal } from '@/@types/movie.type';
+import { MovieMinimal } from '@/@types/movie.types';
 import { searchMovies } from '@/lib/api/movies/search-movies';
 
 const schema = yup.object().shape({

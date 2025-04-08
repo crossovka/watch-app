@@ -1,5 +1,5 @@
 import { API_URL } from '@/config/api.config';
-import { MovieMinimal } from '@/@types/movie.type';
+import { MovieMinimal } from '@/@types/movie.types';
 
 export const searchMovies = async (title: string): Promise<MovieMinimal[]> => {
 	const query = new URLSearchParams();

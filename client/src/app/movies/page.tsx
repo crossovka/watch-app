@@ -1,7 +1,7 @@
 import { getBaseUrl } from '@/lib/utils/get-base-url';
 import { getMovies } from '@/lib/api/movies/get-movies';
 import { MoviesList } from '@/components/modules/MoviesList';
-import { MovieMinimal } from '@/@types/movie.type';
+import { MovieMinimal } from '@/@types/movie.types';
 
 type MoviesPageProps = {
 	searchParams: { [key: string]: string | undefined };

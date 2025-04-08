@@ -6,7 +6,7 @@ import { searchMovies } from '@/lib/api/movies/search-movies';
 import { useDebounce } from '@/hooks/useDebounce';
 
 import { SearchInput } from '@/components/elements/SearchInput';
-import { MovieMinimal } from '@/@types/movie.type';
+import { MovieMinimal } from '@/@types/movie.types';
 
 type MovieSearchProps = {
 	onResults: (movies: MovieMinimal[] | null) => void;

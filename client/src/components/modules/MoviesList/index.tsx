@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { MovieCard } from '@/components/elements/MovieCard';
 import { Pagination } from '@/components/modules/Pagination';
 import { MovieSearch } from '@/components/modules/MovieSearch';
-import { MovieMinimal } from '@/@types/movie.type';
+import { MovieMinimal } from '@/@types/movie.types';
 
 type MoviesListProps = {
 	initialMovies: MovieMinimal[];

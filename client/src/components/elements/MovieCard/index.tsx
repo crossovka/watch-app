@@ -21,22 +21,28 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 }) => {
 	return (
 		<div className="">
-			<div className="">
-				<Image
-					src={thumbnail}
-					alt={slug}
-					width={300}
-					height={300}
-					className="rounded-xl object-cover"
-				/>
-			</div>
+			<Link href={`/movies/${slug}`} className="">
+				<div className="">
+					<Image
+						src={thumbnail}
+						alt={slug}
+						width={300}
+						height={300}
+						className="rounded-xl object-cover"
+					/>
+				</div>
 
-			<h3 className="">{title}</h3>
-			<p className="">{year}</p>
+				<h3 className="">{title}</h3>
+				<p className="">{year}</p>
+			</Link>
 
-			<div className="">
+			<div className="flex gap-2 mt-2 flex-wrap">
 				{categories.map((cat) => (
-					<Link key={cat.slug} href={`/category/${cat.slug}`} className="">
+					<Link
+						key={cat.slug}
+						href={`/category/${cat.slug}`}
+						className="text-sm text-blue-600 hover:underline"
+					>
 						{cat.name}
 					</Link>
 				))}

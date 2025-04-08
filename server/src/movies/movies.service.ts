@@ -111,6 +111,7 @@ export class MoviesService {
 		total: number
 		page: number
 		perPage: number
+		totalPages: number;
 	}> {
 		const { title, year, minRating, maxRating, categories, page = 1, perPage = 10 } = query
 
@@ -147,7 +148,8 @@ export class MoviesService {
 			items: movies.map((movie) => new MovieShortDto(movie)),
 			total,
 			page,
-			perPage
+			perPage,
+			totalPages: Math.ceil(total / perPage)
 		}
 	}
 

@@ -6,6 +6,7 @@ import { CategoryMinimal } from '@/@types/category.types';
 type MovieCardProps = {
 	year: number;
 	thumbnail: string;
+	title: string;
 	slug: string;
 	categories: CategoryMinimal[];
 	addedAt: string;
@@ -14,6 +15,7 @@ type MovieCardProps = {
 export const MovieCard: React.FC<MovieCardProps> = ({
 	year,
 	thumbnail,
+	title,
 	slug,
 	categories,
 }) => {
@@ -29,7 +31,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 				/>
 			</div>
 
-			<h3 className="">{slug}</h3>
+			<h3 className="">{title}</h3>
 			<p className="">{year}</p>
 
 			<div className="">

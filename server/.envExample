@@ -4,3 +4,10 @@ DATABASE_PORT=5443
 DATABASE_USER=myuser
 DATABASE_PASSWORD=mypassword
 DATABASE_NAME=mydb
+
+# Email config
+EMAIL_USER=name@gmail.com
+EMAIL_PASSWORD=apppassword
+
+# Client URL (для ссылки подтверждения)
+CLIENT_URL=http://localhost:3001

@@ -6,6 +6,7 @@ type GetMoviesResponse = {
 	total: number;
 	page: number;
 	perPage: number;
+	totalPages: number;
 };
 
 export async function getMovies(
@@ -13,7 +14,10 @@ export async function getMovies(
 	perPage = 3
 ): Promise<GetMoviesResponse> {
 	const res = await fetch(`${API_URL}/movies?page=${page}&perPage=${perPage}`, {
-		next: { revalidate: 0 },
+		next: {
+			revalidate: 60, // кешируем на 1 минуту
+			tags: ['movies'], // если делать invalidation
+		},
 	});
 
 	if (!res.ok) {

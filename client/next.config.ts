@@ -5,7 +5,6 @@ const nextConfig: NextConfig = {
 		domains: ['localhost'],
 	},
 	reactStrictMode: true,
-	swcMinify: true,
 
 	async rewrites() {
 		return [

@@ -80,18 +80,21 @@ export class MoviesService {
 		total: number
 		page: number
 		perPage: number
+		totalPages: number
 	}> {
 		const [movies, total] = await this.movieRepo.findAndCount({
 			skip: (page - 1) * perPage,
 			take: perPage,
-			order: { createdAt: 'DESC' } // сортируем от новых к старым
+			order: { createdAt: 'DESC' },
+			relations: ['categories'] // загружаем категории
 		})
 
 		return {
 			items: movies.map((movie) => new MovieShortDto(movie)),
 			total,
 			page,
-			perPage
+			perPage,
+			totalPages: Math.ceil(total / perPage) // вычисляем totalPages
 		}
 	}
 
@@ -221,6 +224,7 @@ export class MoviesService {
 		const updatedMovie = await this.movieRepo.findOneBy({ id: movie.id })
 		return { views: updatedMovie?.views || 0 }
 	}
+
 	async getWatchHistory(userId: number, page: number = 1, perPage: number = 10) {
 		const [history, total] = await this.watchHistoryRepo.findAndCount({
 			where: { user: { id: userId } },

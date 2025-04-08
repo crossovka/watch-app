@@ -1,49 +1,61 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { API_URL } from '@/config/api.config';
+
+import { getBaseUrl } from '@/lib/utils/get-base-url';
+import { fetchFavorites } from '@/lib/api/user/fetch-favorites';
+
 import { MovieCard } from '@/components/elements/MovieCard';
 import { Pagination } from '@/components/modules/Pagination';
 
-export default async function FavoritesPage() {
-	const cookieStore = await cookies(); // обязательно await
-	const token = cookieStore.get('access_token')?.value;
+type FavoritesPageProps = {
+	searchParams: { [key: string]: string | undefined };
+};
+
+export async function generateMetadata({ searchParams }: FavoritesPageProps) {
+	const page = Number(searchParams.page ?? 1);
+	const baseUrl = await getBaseUrl('/user/favorites');
+	const canonical = page === 1 ? baseUrl : `${baseUrl}?page=${page}`;
+
+	return {
+		title: `Избранные фильмы – страница ${page}`,
+		description: `Ваш список избранных фильмов. Страница ${page}`,
+		alternates: {
+			canonical,
+		},
+	};
+}
+
+export default async function FavoritesPage({
+	searchParams,
+}: FavoritesPageProps) {
+	const token = cookies().get('access_token')?.value;
 
 	if (!token) {
 		redirect('/login');
 	}
 
-	const page = 1;
-	const perPage = 2;
+	const page = Number(searchParams.page ?? 1);
+	const perPage = 1;
 
-	const res = await fetch(
-		`${API_URL}/user/favorites?page=${page}&perPage=${perPage}`,
-		{
-			method: 'GET',
-			headers: {
-				// Поставим куку вручную, если backend только так её и ожидает
-				Cookie: `access_token=${token}`,
-			},
-			cache: 'no-store',
-			credentials: 'include', // на всякий, чтобы отправлялись куки
-		}
-	);
-
-	// if (!res.ok) return <p>Ошибка при загрузке</p>;
-	if (!res.ok) {
-		const error = await res.text();
-		console.error('Ошибка запроса:', res.status, error);
+	let favorites;
+	try {
+		favorites = await fetchFavorites({ token, page, perPage });
+	} catch (err) {
+		console.error(err);
 		return <p>Ошибка при загрузке</p>;
 	}
-
-	const favorites = await res.json();
 
 	return (
 		<main>
 			<h1>Избранные фильмы</h1>
 			<div>
-				{favorites?.data?.map?.((movie) => (
-					<MovieCard key={movie.slug} {...movie} />
-				)) ?? <p>Нет избранных фильмов</p>}
+				{favorites.data.length > 0 ? (
+					favorites.data.map((movie) => (
+						<MovieCard key={movie.slug} {...movie} />
+					))
+				) : (
+					<p>Нет избранных фильмов</p>
+				)}
 			</div>
 
 			<Pagination page={favorites.page} totalPages={favorites.totalPages} />

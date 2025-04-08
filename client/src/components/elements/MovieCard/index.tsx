@@ -23,9 +23,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 				<Image
 					src={thumbnail}
 					alt={slug}
-					layout="fill"
-					objectFit="cover"
-					className=""
+					width={300}
+					height={400}
+					className="rounded-xl object-cover"
 				/>
 			</div>
 

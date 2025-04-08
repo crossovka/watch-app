@@ -8,10 +8,10 @@ export class JwtAuthGuard implements CanActivate {
 
 	canActivate(context: ExecutionContext): boolean {
 		const request = context.switchToHttp().getRequest<RequestWithUser>()
-		const token = request.headers.authorization?.split(' ')[1]
+		const token = request.cookies?.['access_token']
 
 		if (!token) {
-			throw new UnauthorizedException('Токен отсутствует')
+			throw new UnauthorizedException('JWT токен отсутствует в cookie')
 		}
 
 		try {
@@ -24,8 +24,8 @@ export class JwtAuthGuard implements CanActivate {
 
 			return true
 		} catch (err) {
-			console.log('JWT error:', err)
-			throw new UnauthorizedException('Неверный токен')
+			console.error('JWT ошибка:', err)
+			throw new UnauthorizedException('Неверный или просроченный токен')
 		}
 	}
 }

@@ -2,44 +2,33 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
 import { IUser, LoginPayload, RegisterPayload } from './auth.types';
 
-import { API_URL } from '@/config/api.config';
+const BASE_URL = '/api';
 
 // Логин
 export const loginThunk = createAsyncThunk(
-	'auth/login', // Название для экшена
+	'auth/login',
 	async (data: LoginPayload, thunkAPI) => {
 		try {
-			// Выполняем запрос на сервер для авторизации
-			const response = await fetch(`${API_URL}/auth/login`, {
+			const response = await fetch(`${BASE_URL}/auth/login`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
+				credentials: 'include', // ОБЯЗАТЕЛЬНО: чтобы кука пришла с сервера
 				body: JSON.stringify(data),
 			});
 
-			// Проверка на успешный ответ
 			if (!response.ok) {
 				const message = (await response.json())?.message || 'Ошибка входа';
-				throw new Error(message); // Выводим ошибку, если ответ неудачный
+				throw new Error(message);
 			}
 
-			// Если логин успешен, получаем данные пользователя
-			const userData: IUser = await response.json();
+			const { user } = await response.json();
 
-			// Если в ответе есть токен, сохраняем его в localStorage
-			if (userData.access_token) {
-				localStorage.setItem('token', userData.access_token);
-			}
-
-			// Успешный вход - показываем уведомление
 			toast.success('Успешный вход!');
-
-			// Возвращаем данные пользователя, чтобы они обновили состояние в Redux
-			return userData;
+			return { ...user }; // токен не нужен — он уже в куке
 		} catch (err) {
-			// Обработка ошибок при запросе
 			const message = err instanceof Error ? err.message : 'Ошибка при входе';
-			toast.error(message); // Показываем ошибку в уведомлении
-			return thunkAPI.rejectWithValue(message); // Возвращаем ошибку для обработки в редьюсере
+			toast.error(message);
+			return thunkAPI.rejectWithValue(message);
 		}
 	}
 );
@@ -49,9 +38,10 @@ export const registerThunk = createAsyncThunk(
 	'auth/register',
 	async (data: RegisterPayload, thunkAPI) => {
 		try {
-			const response = await fetch(`${API_URL}/user/register`, {
+			const response = await fetch(`${BASE_URL}/user/register`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
+				credentials: 'include', // нужно, если ты на бэке сразу логинишь
 				body: JSON.stringify(data),
 			});
 
@@ -61,18 +51,31 @@ export const registerThunk = createAsyncThunk(
 				throw new Error(message);
 			}
 
-			const userData: IUser = await response.json();
-
-			// Если токен возвращается при регистрации, его можно сохранить аналогично
-			if (userData.token) {
-				localStorage.setItem('token', userData.token);
-			}
+			const { user } = await response.json(); // предполагаем, что структура та же
 
 			toast.success('Регистрация прошла успешно!');
-			return userData;
+			return user;
 		} catch (err) {
 			const message =
 				err instanceof Error ? err.message : 'Ошибка при регистрации';
+			toast.error(message);
+			return thunkAPI.rejectWithValue(message);
+		}
+	}
+);
+
+export const logoutThunk = createAsyncThunk(
+	'auth/logout',
+	async (_, thunkAPI) => {
+		try {
+			await fetch(`${BASE_URL}/auth/logout`, {
+				method: 'POST',
+				credentials: 'include',
+			});
+			toast.success('Вы вышли из аккаунта');
+			return null;
+		} catch (err) {
+			const message = err instanceof Error ? err.message : 'Ошибка при выходе';
 			toast.error(message);
 			return thunkAPI.rejectWithValue(message);
 		}

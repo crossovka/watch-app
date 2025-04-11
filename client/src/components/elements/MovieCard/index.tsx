@@ -18,6 +18,7 @@ type MovieCardProps = {
 	categories: CategoryMinimal[];
 	addedAt: string;
 	isFavorite?: boolean;
+	onRemoveFromFavorites?: (slug: string) => void; // 👈 добавляем этот коллбэк
 };
 
 export const MovieCard: React.FC<MovieCardProps> = ({
@@ -27,6 +28,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 	slug,
 	categories,
 	isFavorite: initialFavorite = false,
+	onRemoveFromFavorites, // 👈 используем
 }) => {
 	const [isFavorite, setIsFavorite] = useState(initialFavorite);
 	const [loading, setLoading] = useState(false);
@@ -39,6 +41,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 				await removeFromFavoritesClient(slug);
 				setIsFavorite(false);
 				toast.success('Фильм удалён из избранного');
+
+				// 👇 Если мы внутри FavoriteList, вызываем обновление родителя
+				if (onRemoveFromFavorites) {
+					onRemoveFromFavorites(slug);
+				}
 			} else {
 				await addToFavoritesClient(slug);
 				setIsFavorite(true);

@@ -3,11 +3,20 @@ import { redirect } from 'next/navigation';
 import { getBaseUrl } from '@/lib/utils/get-base-url';
 import { fetchFavoritesServer } from '@/lib/api/user/fetch-favorites.server';
 
-import { MovieCard } from '@/components/elements/MovieCard';
 import { Pagination } from '@/components/modules/Pagination';
+import { FavoriteList } from '@/components/modules/FavoriteList';
+import { MovieMinimal } from '@/@types/movie.types';
 
 type FavoritesPageProps = {
 	searchParams: { [key: string]: string | undefined };
+};
+
+type FavoritesResponse = {
+	data: MovieMinimal[];
+	page: number;
+	perPage: number;
+	total: number;
+	totalPages: number;
 };
 
 export async function generateMetadata({ searchParams }: FavoritesPageProps) {
@@ -18,9 +27,7 @@ export async function generateMetadata({ searchParams }: FavoritesPageProps) {
 	return {
 		title: `Избранные фильмы – страница ${page}`,
 		description: `Ваш список избранных фильмов. Страница ${page}`,
-		alternates: {
-			canonical,
-		},
+		alternates: { canonical },
 	};
 }
 
@@ -28,14 +35,14 @@ export default async function FavoritesPage({
 	searchParams,
 }: FavoritesPageProps) {
 	const page = Number(searchParams.page ?? 1);
-	const perPage = 1;
+	const perPage = 10;
 
-	let favorites;
+	let favorites: FavoritesResponse;
 
 	try {
 		favorites = await fetchFavoritesServer({ page, perPage });
-	} catch (err: any) {
-		if (err.message === 'Не авторизован') {
+	} catch (err: unknown) {
+		if (err instanceof Error && err.message === 'Не авторизован') {
 			redirect('/login');
 		}
 
@@ -43,19 +50,16 @@ export default async function FavoritesPage({
 		return <p>Ошибка при загрузке</p>;
 	}
 
+	// Добавляем isFavorite: true к каждому фильму потому что это уже страница избранных фильмов
+	const movies = favorites.data.map((movie) => ({
+		...movie,
+		isFavorite: true,
+	}));
+
 	return (
 		<main>
 			<h1>Избранные фильмы</h1>
-			<div>
-				{favorites.data.length > 0 ? (
-					favorites.data.map((movie) => (
-						<MovieCard key={movie.slug} {...movie} />
-					))
-				) : (
-					<p>Нет избранных фильмов</p>
-				)}
-			</div>
-
+			<FavoriteList initialMovies={movies} />
 			<Pagination page={favorites.page} totalPages={favorites.totalPages} />
 		</main>
 	);

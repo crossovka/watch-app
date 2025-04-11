@@ -36,7 +36,8 @@ export default function LoginForm() {
 		try {
 			await dispatch(loginThunk(data)); // просто диспатчим без unwrap
 			reset();
-			window.location.href = '/'; // редирект
+			// window.location.href = '/'; // редирект
+			window.location.href = '/movies'; // редирект
 		} catch (error) {
 			toast.error(error as string); // если вдруг что-то бросит, логируем
 		}

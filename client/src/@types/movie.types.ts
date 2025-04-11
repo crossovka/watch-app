@@ -7,6 +7,7 @@ export type MovieMinimal = {
 	slug: string;
 	categories: CategoryMinimal[];
 	addedAt: string;
+	isFavorite?: boolean
 };
 
 export type MovieFull = {

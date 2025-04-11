@@ -1,6 +1,10 @@
 import { getBaseUrl } from '@/lib/utils/get-base-url';
+
 import { getMovies } from '@/lib/api/movies/get-movies';
+import { fetchFavorites } from '@/lib/api/user/fetch-favorites.server';
+
 import { MoviesList } from '@/components/modules/MoviesList';
+
 import { MovieMinimal } from '@/@types/movie.types';
 
 type MoviesPageProps = {

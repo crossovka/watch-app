@@ -1,8 +1,7 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { getBaseUrl } from '@/lib/utils/get-base-url';
-import { fetchFavorites } from '@/lib/api/user/fetch-favorites';
+import { fetchFavoritesServer } from '@/lib/api/user/fetch-favorites.server';
 
 import { MovieCard } from '@/components/elements/MovieCard';
 import { Pagination } from '@/components/modules/Pagination';
@@ -28,19 +27,18 @@ export async function generateMetadata({ searchParams }: FavoritesPageProps) {
 export default async function FavoritesPage({
 	searchParams,
 }: FavoritesPageProps) {
-	const token = cookies().get('access_token')?.value;
-
-	if (!token) {
-		redirect('/login');
-	}
-
 	const page = Number(searchParams.page ?? 1);
 	const perPage = 1;
 
 	let favorites;
+
 	try {
-		favorites = await fetchFavorites({ token, page, perPage });
-	} catch (err) {
+		favorites = await fetchFavoritesServer({ page, perPage });
+	} catch (err: any) {
+		if (err.message === 'Не авторизован') {
+			redirect('/login');
+		}
+
 		console.error(err);
 		return <p>Ошибка при загрузке</p>;
 	}

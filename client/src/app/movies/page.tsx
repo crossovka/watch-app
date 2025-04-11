@@ -1,7 +1,7 @@
 import { getBaseUrl } from '@/lib/utils/get-base-url';
 
 import { getMovies } from '@/lib/api/movies/get-movies';
-import { fetchFavorites } from '@/lib/api/user/fetch-favorites.server';
+import { fetchFavoriteSlugsServer } from '@/lib/api/user/fetch-favorite-slugs.server';
 
 import { MoviesList } from '@/components/modules/MoviesList';
 
@@ -30,11 +30,23 @@ export default async function MoviesPage({ searchParams }: MoviesPageProps) {
 	const perPage = 5;
 
 	try {
-		const moviesData = await getMovies(page, perPage);
+		const [moviesData, favoriteSlugsArr] = await Promise.all([
+			getMovies(page, perPage),
+			fetchFavoriteSlugsServer(),
+		]);
+
+		const favoriteSlugs = new Set(favoriteSlugsArr);
+
+		const moviesWithFavorites: MovieMinimal[] = moviesData.items.map(
+			(movie) => ({
+				...movie,
+				isFavorite: favoriteSlugs.has(movie.slug),
+			})
+		);
 
 		return (
 			<MoviesList
-				initialMovies={moviesData.items as MovieMinimal[]}
+				initialMovies={moviesWithFavorites}
 				page={moviesData.page}
 				totalPages={moviesData.totalPages}
 			/>

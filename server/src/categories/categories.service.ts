@@ -41,6 +41,17 @@ export class CategoriesService {
 		return new CategoryResponseDto(category)
 	}
 
+	// async findOne(slug: string): Promise<CategoryWithMoviesResponseDto> {
+	// 	const category = await this.categoryRepo.findOne({
+	// 		where: { slug },
+	// 		relations: ['movies'],
+	// 	})
+	
+	// 	throwIfNotFound(category, 'Категория не найдена')
+	
+	// 	return new CategoryWithMoviesResponseDto(category)
+	// }
+
 	async update(slug: string, dto: UpdateCategoryDto): Promise<CategoryResponseDto> {
 		const category = await this.categoryRepo.findOne({ where: { slug } })
 		throwIfNotFound(category, 'Категория не найдена')

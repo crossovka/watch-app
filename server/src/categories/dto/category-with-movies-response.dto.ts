@@ -11,7 +11,6 @@ export class CategoryWithMoviesResponseDto {
 		id: number
 		title: string
 		slug: string
-		poster: string
 		rating: number
 		year: number
 	}[]
@@ -26,7 +25,6 @@ export class CategoryWithMoviesResponseDto {
 			id: movie.id,
 			title: movie.title,
 			slug: movie.slug,
-			poster: movie.poster,
 			rating: movie.rating,
 			year: movie.year
 		}))

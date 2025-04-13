@@ -22,6 +22,12 @@ export class CategoriesController {
 		return this.categoryService.findAll()
 	}
 
+	// Новый роут для получения только названий категорий
+	@Get('names')
+	findAllNames() {
+		return this.categoryService.findAllNames()
+	}
+
 	@Get(':slug')
 	findOne(@Param('slug') slug: string) {
 		return this.categoryService.findOne(slug)

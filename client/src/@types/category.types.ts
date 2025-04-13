@@ -17,3 +17,7 @@ export type CategoryFull = {
 	description: string;
 	thumbnail: string;
 };
+
+export interface CategoryName {
+	name: string;
+}

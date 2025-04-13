@@ -11,6 +11,7 @@ import { CreateCategoryDto } from './dto/create-category.dto'
 import { UpdateCategoryDto } from './dto/update-category.dto'
 import { CategoryResponseDto } from './dto/category-response.dto'
 import { CategoryShortDto } from './dto/category-short.dto'
+import { CategoryNameDto } from './dto/category-name.dto'
 
 @Injectable()
 export class CategoriesService {
@@ -35,6 +36,12 @@ export class CategoriesService {
 		return categories.map((cat) => new CategoryShortDto(cat))
 	}
 
+	// Новый метод для получения только названий категорий
+	async findAllNames(): Promise<CategoryNameDto[]> {
+		const categories = await this.categoryRepo.find()
+		return categories.map((cat) => new CategoryNameDto(cat))
+	}
+
 	async findOne(slug: string): Promise<CategoryResponseDto> {
 		const category = await this.categoryRepo.findOne({ where: { slug } })
 		throwIfNotFound(category, 'Категория не найдена')
@@ -46,9 +53,9 @@ export class CategoriesService {
 	// 		where: { slug },
 	// 		relations: ['movies'],
 	// 	})
-	
+
 	// 	throwIfNotFound(category, 'Категория не найдена')
-	
+
 	// 	return new CategoryWithMoviesResponseDto(category)
 	// }
 

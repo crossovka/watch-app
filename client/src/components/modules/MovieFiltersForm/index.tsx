@@ -7,7 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { MovieFilters } from '@/@types/movieFilters.type';
 import { MovieMinimal } from '@/@types/movie.types';
-import { searchMovies } from '@/lib/api/movies/search-movies';
+import { searchMovies } from '@/lib/api/movies/filter-movies.ts';
 
 const schema = yup.object().shape({
 	title: yup.string().optional(),

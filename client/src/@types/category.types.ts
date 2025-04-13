@@ -20,4 +20,5 @@ export type CategoryFull = {
 
 export interface CategoryName {
 	name: string;
+	slug: string;
 }

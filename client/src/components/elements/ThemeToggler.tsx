@@ -1,4 +1,3 @@
-// Пример переключателя
 'use client';
 
 import { useActions } from '@/hooks/useActions';

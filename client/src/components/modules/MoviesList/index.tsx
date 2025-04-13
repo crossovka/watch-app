@@ -17,18 +17,18 @@ export const MoviesList = ({
 	page,
 	totalPages,
 }: MoviesListProps) => {
-	const [searchResults, setSearchResults] = useState<MovieMinimal[] | null>(
+	const [filteredMovies, setFilteredMovies] = useState<MovieMinimal[] | null>(
 		null
 	);
 
-	const isSearching = searchResults !== null;
-	const moviesToRender = isSearching ? searchResults : initialMovies;
+	const moviesToRender = filteredMovies || initialMovies;
+	const isFiltered = filteredMovies !== null;
 
 	return (
-		<div>
+		<div className="">
 			<h1 className="">Фильмы</h1>
 
-			<MovieSearch onResults={setSearchResults} />
+			<MovieSearch onResults={setFilteredMovies} />
 
 			{moviesToRender.length === 0 ? (
 				<p className="">Фильмы не найдены</p>
@@ -40,7 +40,7 @@ export const MoviesList = ({
 				</div>
 			)}
 
-			{!isSearching && <Pagination page={page} totalPages={totalPages} />}
+			{!isFiltered && <Pagination page={page} totalPages={totalPages} />}
 		</div>
 	);
 };
